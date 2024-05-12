@@ -1,0 +1,121 @@
+Table: customer
+
+    Desc: create table query
+
+    CREATE TABLE `portfolio_tracking`.`customer`(
+        `customer_id` INT NOT NULL AUTO_INCREMENT,
+        `customer_name` VARCHAR(200) NULL,
+        `customer_email` VARCHAR(200) NULL,
+        `customer_contact` VARCHAR(15) NULL,
+        `is_active` SMALLINT NOT NULL DEFAULT '1',
+        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(`customer_id`)
+    );
+
+    Desc: insert data in customer table
+
+    INSERT INTO `customer`(
+        `customer_id`,
+        `customer_name`,
+        `customer_email`,
+        `customer_contact`,
+        `is_active`,
+        `created_at`,
+        `updated_at`
+    )
+    VALUES(
+        NULL,
+        'Umair Shah',
+        'umair.test@gmail.com',
+        '9874237877',
+        '1',
+        CURRENT_TIMESTAMP(), 
+        CURRENT_TIMESTAMP()
+    );
+
+
+Table: customer_portfolio
+
+Desc: create customer portfolio table
+
+    CREATE TABLE `portfolio_tracking`.`customer_portfolio`(
+        `customer_portfolio_id` INT NOT NULL AUTO_INCREMENT,
+        `customer_id` INT(11),
+        `customer_portfolio_name` VARCHAR(200),
+        `is_active` SMALLINT NOT NULL DEFAULT '1',
+        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(`customer_portfolio_id`)
+    );
+
+
+Table: stock_trade
+
+    Desc: create stock trade table
+
+   CREATE TABLE `portfolio_tracking`.`stock_trade`(
+        `stock_trade_id` INT(11) NOT NULL AUTO_INCREMENT,
+        `customer_id` INT(11) NOT NULL,
+        `customer_portfolio_id` INT(11) NOT NULL,
+        `live_stock_id` INT(11) NOT NULL,
+        `stock_trade_quantity` INT(11) NOT NULL,
+        `stock_trade_price` FLOAT NOT NULL,
+        `stock_trade_type` ENUM("BUY", "SELL") NULL,
+        `stock_trade_date` DATETIME NULL,
+        `is_deleted` SMALLINT NOT NULL DEFAULT '0',
+        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(`stock_trade_id`)
+    );
+
+
+Table: stock_trade
+
+    Desc: create stock trade table
+    
+    CREATE TABLE `portfolio_tracking`.`customer_holding`(
+        `customer_holding_id` INT(11) NOT NULL AUTO_INCREMENT,
+        `customer_id` INT(11) NOT NULL,
+        `customer_portfolio_id` INT(11) NOT NULL,
+        `live_stock_id` INT(11) NOT NULL,
+        `customer_holding_stock_quantity` INT(15) NOT NULL,
+        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(`customer_holding_id`)
+    );
+
+
+Table: live_stock
+
+    Desc: create live stock table
+
+    CREATE TABLE `portfolio_tracking`.`live_stock`(
+        `live_stock_id` INT(11) NOT NULL AUTO_INCREMENT,
+        `live_stock_name` VARCHAR(200),
+        `live_stock_full_name` VARCHAR(200),
+        `live_stock_price` Float NOT NULL,
+        `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(`live_stock_id`)
+    );
+
+
+    Desc: insert data in live stocks
+
+    INSERT INTO `live_stock`(
+        `live_stock_id`,
+        `live_stock_name`,
+        `live_stock_full_name`,
+        `live_stock_price`,
+        `created_at`,
+        `updated_at`
+    )
+    VALUES(
+        NULL,
+        'HDFC',
+        'Housing Development Finance Corporation',
+        '1439.85',
+        CURRENT_TIMESTAMP(), 
+        CURRENT_TIMESTAMP()
+    );
