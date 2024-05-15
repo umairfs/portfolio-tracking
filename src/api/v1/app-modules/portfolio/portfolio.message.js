@@ -66,6 +66,11 @@ module.exports = {
         status: 400,
         message: "No portfolio found",
     },
+    PFE014: {
+        code: "PFE014",
+        status: 400,
+        message: "No returns found",
+    },
     PFS001: {
         code: "PFS001",
         success: true,

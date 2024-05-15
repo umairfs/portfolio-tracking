@@ -7,6 +7,9 @@ const portfolioService = {};
 // servic-desc: Add portfolio description in customer portfolio table
 portfolioService.addPortfolio = async({ customer_id ,customer_portfolio_name }) => {
     
+    // check customer exist or not
+    await portfolioService.getCustomerDetails({ customer_id });
+
     // add portfolio details in db table
     await portfolioModel.addPortfolio({ customer_id, customer_portfolio_name, is_active: 1 });
 
@@ -16,6 +19,9 @@ portfolioService.addPortfolio = async({ customer_id ,customer_portfolio_name }) 
 // servic-desc: Add stock in customer stock trade table
 portfolioService.addTrade = async({ customer_id, portfolio_id, stock_name, stock_quantity, stock_price, trade_type, trade_date }) => {
     
+    // check customer exist or not
+    await portfolioService.getCustomerDetails({ customer_id });
+
     // fetch stock details
     let stockDetails = await portfolioModel.getLiveStocks ({ live_stock_name: stock_name });
 
@@ -40,7 +46,10 @@ portfolioService.addTrade = async({ customer_id, portfolio_id, stock_name, stock
 
 // servic-desc: update customer stocks trade detail in stock trade table
 portfolioService.updateTrade = async({ trade_id, stock_name, stock_quantity, stock_price, trade_type, trade_date }) => {
-    
+
+    // check customer exist or not
+    await portfolioService.getCustomerDetails({ customer_id });
+
     // fetch stock details
     let stockDetails = await portfolioModel.getLiveStocks ({ live_stock_name: stock_name });
 
@@ -67,7 +76,10 @@ portfolioService.updateTrade = async({ trade_id, stock_name, stock_quantity, sto
 };
 
 // servic-desc: delete customers stock from stock trade
-portfolioService.deleteTrade = async({ stock_trade_id }) => {
+portfolioService.deleteTrade = async({ customer_id, stock_trade_id }) => {
+
+    // check customer exist or not
+    await portfolioService.getCustomerDetails({ customer_id });
     
     await portfolioModel.updateStockTrade(
         {
@@ -84,6 +96,9 @@ portfolioService.deleteTrade = async({ stock_trade_id }) => {
 // servic-desc: get customerwise portfolio details with stocks
 portfolioService.getPortfolio = async({ customer_id }) => {
     
+    // check customer exist or not
+    await portfolioService.getCustomerDetails({ customer_id });
+
     // initializing response variable
     let response = [];
 
@@ -135,7 +150,10 @@ portfolioService.getPortfolio = async({ customer_id }) => {
 
 // servic-desc: get customerwise portfolio wise holdings
 portfolioService.getHolding = async({ customer_id, portfolio_id }) => {
-    
+
+    // check customer exist or not
+    await portfolioService.getCustomerDetails({ customer_id });
+
     // fetch stock details
     let holdingDetails = await portfolioModel.getHolding({ customer_id, customer_portfolio_id: portfolio_id });
 
@@ -152,27 +170,78 @@ portfolioService.getHolding = async({ customer_id, portfolio_id }) => {
 
 // servic-desc: get customerwise portfolio wise returns
 portfolioService.getReturns = async({ customer_id, portfolio_id }) => {
-    
-    // fetch stock details
-    let holdingDetails = await portfolioModel.getReturns({ customer_id, customer_portfolio_id: portfolio_id });
+   
+    // check customer exist or not
+    let customer = await portfolioService.getCustomerDetails({ customer_id });
+
+    // fetch portfolio return
+    let returns = await portfolioModel.getReturns({ customer_id, customer_portfolio_id: portfolio_id });
+
+    if(!returns.length) {
+        return errorUtil.throw(portfolioMessage.PFE014);
+    }
+
+    returns = returns[0];
+
+    // fetch final holdings
+    let holdingDetails = await portfolioModel.getHolding({ customer_id, customer_portfolio_id: portfolio_id });
 
     if(!holdingDetails.length) {
         return errorUtil.throw(portfolioMessage.PFE013);
     }
 
-    holdingDetails.forEach((item, index) => {
-        let returns = ((item.totalSellPrice - item.totalBuyPrice)/item.totalBuyPrice)*100;
+    holdingDetails = holdingDetails[0];
 
-        holdingDetails[index].total_return = returns;
-    });
+    // calculating absolute return, relative return, percentage return
+
+    // initial portfolio value - as of now we are by default keeping it in customers table, for better approach we can create a functionality where we can store initial investment, based on that investment what was the initial portfolio in a seperate table.
+    let initialPortfolio = customer.initial_portfolio_value;
+
+    // final portfolio value
+    let finalPortfolio = holdingDetails.totalQuantity * holdingDetails.stock_price + customer.cash;
+
+    // absolute return value
+    let absoluteReturn = (finalPortfolio - initialPortfolio );
+
+    // relative return value
+    let relativeReturn = ((finalPortfolio - initialPortfolio )/initialPortfolio) * 100;
+
+    // percentage return value
+    let percentageReturn = (absoluteReturn/initialPortfolio) * 100;
+
+
+
+    // calculate portfolio return
+    let portfolioReturns = ((returns.totalSellPrice - returns.totalBuyPrice)/returns.totalBuyPrice)*100;
+
+    returns.current_portfolio_return = portfolioReturns;
+    returns.absoluteReturn = absoluteReturn;
+    returns.relativeReturn = relativeReturn;
+    returns.percentageReturn = percentageReturn;
+
 
     return finalResp = {
         success: true,
-        data: holdingDetails
+        data: returns
     };
 
 };
 
+// servic-desc: get customer details
+portfolioService.getCustomerDetails = async({ customer_id }) => {
+    
+    // fetch customer details
+    let customer = await portfolioModel.getCustomerDetails({ customer_id });
+
+    if(!customer.length) {
+        return errorUtil.throw({code: "CSE001", status:200, message: "Customer not found"});
+    }
+
+    customer = customer[0];
+
+    return customer;
+
+};
 
 // service-desc: update customer holding table
 portfolioService.updateCustomerHoldings = async({live_stock_id, customer_id, customer_portfolio_id, stock_quantity, action_type}) => {

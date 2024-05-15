@@ -343,7 +343,7 @@ portfolioModel.getHolding = async (
         "ls.live_stock_price as stock_price"
 
     ];
-    const where = [];
+    const where = [`is_deleted = 0`];
     const params = [];
     const join = [
         `join ${dbTablesNameConst.LIVE_STOCK} as ls on ls.live_stock_id = st.live_stock_id`,
@@ -385,7 +385,7 @@ portfolioModel.getReturns = async (
         "ls.live_stock_price as stock_price"
 
     ];
-    const where = [];
+    const where = [ `is_deleted = 0` ];
     const params = [];
     const join = [
         `join ${dbTablesNameConst.LIVE_STOCK} as ls on ls.live_stock_id = st.live_stock_id`,
@@ -404,6 +404,32 @@ portfolioModel.getReturns = async (
     const rows = await mysqlManager.getRecords(
         `${dbTablesNameConst.STOCK_TRADE} as st`,
         { select, where, params, join },
+        { connection }
+    );
+
+    return rows;
+};
+
+
+// model-desc: Fetch customer details
+portfolioModel.getCustomerDetails = async (
+    { customer_id } = {},
+    { connection } = {}
+) => {
+    const select = [
+        "*"
+    ];
+    const where = [];
+    const params = [];
+
+    if (customer_id !== undefined) {
+        where.push("c.customer_id=?");
+        params.push(customer_id);
+    }
+
+    const rows = await mysqlManager.getRecords(
+        `${dbTablesNameConst.CUSTOMER} as c`,
+        { select, where, params },
         { connection }
     );
 
