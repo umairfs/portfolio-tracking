@@ -340,7 +340,10 @@ portfolioModel.getHolding = async (
         `SUM(
             CASE WHEN st.stock_trade_type = 'BUY' THEN st.stock_trade_quantity ELSE - st.stock_trade_quantity END
         ) AS totalQuantity`,
-        "ls.live_stock_price as stock_price"
+        "ls.live_stock_price as stock_price",
+        `AVG(
+            CASE WHEN st.stock_trade_type = 'BUY' THEN +st.stock_trade_price END
+        ) AS avg_stock_price`
 
     ];
     const where = [`is_deleted = 0`];
